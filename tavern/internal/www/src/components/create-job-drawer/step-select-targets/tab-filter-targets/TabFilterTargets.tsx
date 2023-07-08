@@ -1,7 +1,7 @@
 import { Heading, Text, Stack, StackItem, TabPanel, Icon, Box, Button, Card, CardBody, Checkbox, Flex } from "@chakra-ui/react";
 import Select from "react-select"
 import { MdInfoOutline } from "react-icons/md";
-import { SelectOption, SelectOptionGroup } from "../../../utils/consts";
+// import { SelectOption, SelectOptionGroup } from "../../../utils/consts";
 import { useState } from "react";
 import { SearchFilter } from "./search-filter";
 

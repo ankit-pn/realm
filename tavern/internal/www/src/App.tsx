@@ -11,6 +11,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Home } from "./pages/home";
 import { CreateJob } from "./pages/create-job";
 import 'react-virtualized/styles.css';
+import { GraphView } from "./pages/graph-view/GraphView";
 
 const GET_TOMES = gql`
     query get_tomes{
@@ -36,6 +37,10 @@ const router = createBrowserRouter([
   {
     path: "/createJob",
     element: <CreateJob />,
+  },
+  {
+    path: "/graphView",
+    element: <GraphView />,
   },
 ]);
 

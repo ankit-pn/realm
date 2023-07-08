@@ -6,7 +6,8 @@ import {
   XMarkIcon,
   BugAntIcon,
   ClipboardDocumentCheckIcon,
-  PresentationChartLineIcon
+  PresentationChartLineIcon,
+  ChartBarIcon
 } from '@heroicons/react/24/outline'
 
 import logo from '../../assets/eldrich.png'; 
@@ -16,6 +17,7 @@ const navigation = [
   { name: 'Agent sessions', href: '#', icon: BugAntIcon, current: false },
   { name: 'Realm status', href: '#', icon: PresentationChartLineIcon, current: false },
   { name: 'Documentation', href: '#', icon: DocumentDuplicateIcon, current: false },
+  { name: 'Graph view', href: '/graphView', icon: ChartBarIcon, current: false },
 ]
 const teams = [
   { id: 1, name: 'Heroicons', href: '#', initial: 'H', current: false },
