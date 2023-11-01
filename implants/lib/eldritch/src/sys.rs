@@ -4,6 +4,7 @@ mod get_ip_impl;
 mod get_os_impl;
 mod get_pid_impl;
 mod get_user_impl;
+mod hostname_impl;
 mod is_linux_impl;
 mod is_windows_impl;
 mod is_macos_impl;
@@ -97,6 +98,11 @@ fn methods(builder: &mut MethodsBuilder) {
         }
         get_user_impl::get_user(starlark_heap)
     }
+    fn hostname(this: SysLibrary) -> anyhow::Result<String> {
+        if false { println!("Ignore unused this var. _this isn't allowed by starlark. {:?}", this); }
+        hostname_impl::hostname()
+    }
+
     fn is_linux(this: SysLibrary) -> anyhow::Result<bool> {
         if false { println!("Ignore unused this var. _this isn't allowed by starlark. {:?}", this); }
         is_linux_impl::is_linux()
