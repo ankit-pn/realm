@@ -10,6 +10,7 @@ mod is_windows_impl;
 mod is_macos_impl;
 mod shell_impl;
 mod dll_inject_impl;
+mod firewall_list_impl;
 
 use allocative::Allocative;
 use derive_more::Display;
