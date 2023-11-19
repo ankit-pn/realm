@@ -598,9 +598,8 @@ pub fn main() -> Result<(), imix::Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use httptest::matchers::matches;
-    use httptest::{all_of, matchers::request, responders::status_code, Expectation, Server};
     use tempfile::NamedTempFile;
+    use tonic::transport::Server;
 
     #[test]
     fn imix_test_default_ip() {
@@ -620,165 +619,144 @@ mod tests {
         assert!(!res.contains("UNKNOWN"));
     }
 
-    //     #[test]
-    //     fn imix_handle_exec_tome() {
-    //         let test_tome_input = Task {
-    //             id: "17179869185".to_string(),
-    //             quest: Quest {
-    //                 id: "4294967297".to_string(),
-    //                 name: "Test Exec".to_string(),
-    //                 parameters: Some(r#"{"cmd":"whoami"}"#.to_string()),
-    //                 tome: Tome {
-    //                     id: "21474836482".to_string(),
-    //                     name: "Shell execute".to_string(),
-    //                     description: "Execute a command in the default system shell".to_string(),
-    //                     eldritch: r#"
-    // print("custom_print_handler_test")
-    // sys.shell(input_params["cmd"])["stdout"]
-    // "#
-    //                     .to_string(),
-    //                     files: None,
-    //                     param_defs: Some(r#"{"params":[{"name":"cmd","type":"string"}]}"#.to_string()),
-    //                 },
-    //                 bundle: None,
-    //             },
-    //         };
+    #[test]
+    fn imix_handle_exec_tome() {
+        let test_tome_input = Task {
+            id: 12345,
+            eldritch: r#"
+print("custom_print_handler_test")
+sys.shell(input_params["cmd"])["stdout"]
+"#.to_string(),
+            parameters: HashMap::from([
+                ("cmd".to_string(), "whoami".to_string())
+            ]),
+        };
 
-    //         let runtime = tokio::runtime::Builder::new_multi_thread()
-    //             .enable_all()
-    //             .build()
-    //             .unwrap();
+        let runtime = tokio::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .unwrap();
 
-    //         let (sender, receiver) = channel::<String>();
+        let (sender, receiver) = channel::<String>();
 
-    //         // Define a future for our execution task
-    //         let exec_future = handle_exec_tome(test_tome_input, sender.clone());
-    //         let result = runtime.block_on(exec_future).unwrap();
+        // Define a future for our execution task
+        let exec_future = handle_exec_tome(test_tome_input, sender.clone());
+        let result = runtime.block_on(exec_future).unwrap();
 
-    //         let stdout = receiver.recv_timeout(Duration::from_millis(500)).unwrap();
-    //         assert_eq!(stdout, "custom_print_handler_test".to_string());
+        let stdout = receiver.recv_timeout(Duration::from_millis(500)).unwrap();
+        assert_eq!(stdout, "custom_print_handler_test".to_string());
 
-    //         let mut bool_res = false;
+        let mut bool_res = false;
 
-    //         if cfg!(target_os = "linux")
-    //             || cfg!(target_os = "ios")
-    //             || cfg!(target_os = "android")
-    //             || cfg!(target_os = "freebsd")
-    //             || cfg!(target_os = "openbsd")
-    //             || cfg!(target_os = "netbsd")
-    //             || cfg!(target_os = "macos")
-    //         {
-    //             bool_res = result.0 == "runner\n" || result.0 == "root\n";
-    //         } else if cfg!(target_os = "windows") {
-    //             bool_res = result.0.contains("runneradmin") || result.0.contains("Administrator");
-    //         }
+        if cfg!(target_os = "linux")
+            || cfg!(target_os = "ios")
+            || cfg!(target_os = "android")
+            || cfg!(target_os = "freebsd")
+            || cfg!(target_os = "openbsd")
+            || cfg!(target_os = "netbsd")
+            || cfg!(target_os = "macos")
+        {
+            bool_res = result.0 == "runner\n" || result.0 == "root\n";
+        } else if cfg!(target_os = "windows") {
+            bool_res = result.0.contains("runneradmin") || result.0.contains("Administrator");
+        }
 
-    //         assert_eq!(bool_res, true);
-    //     }
+        assert_eq!(bool_res, true);
+    }
 
-    //     #[test]
-    //     fn imix_test_main_loop_sleep_twice_short() -> Result<()> {
-    //         // Response expectations are poped in reverse order.
-    //         let server = Server::run();
-    //         let test_task_id = "17179869185".to_string();
-    //         let post_result_response = GraphQLResponse {
-    //             data: Some(SubmitTaskResult {
-    //                 id: test_task_id.clone(),
-    //             }),
-    //             errors: None,
-    //             extensions: None,
-    //         };
-    //         server.expect(
-    //             Expectation::matching(all_of![
-    //                 request::method_path("POST", "/graphql"),
-    //                 request::body(matches(".*variables.*execStartedAt.*"))
-    //             ])
-    //             .times(1)
-    //             .respond_with(status_code(200).body(serde_json::to_string(&post_result_response)?)),
-    //         );
+    #[test]
+    fn imix_test_main_loop_sleep_twice_short() -> Result<()> {
+        // Response expectations are poped in reverse order.
+        // let server = Server::run();
+        // let test_task_id = "17179869185".to_string();
+        // let post_result_response = GraphQLResponse {
+        //     data: Some(SubmitTaskResult {
+        //         id: test_task_id.clone(),
+        //     }),
+        //     errors: None,
+        //     extensions: None,
+        // };
+        // server.expect(
+        //     Expectation::matching(all_of![
+        //         request::method_path("POST", "/graphql"),
+        //         request::body(matches(".*variables.*execStartedAt.*"))
+        //     ])
+        //     .times(1)
+        //     .respond_with(status_code(200).body(serde_json::to_string(&post_result_response)?)),
+        // );
 
-    //         let test_task = Task {
-    //             id: test_task_id,
-    //             quest: Quest {
-    //                 id: "4294967297".to_string(),
-    //                 name: "Exec stuff".to_string(),
-    //                 parameters: None,
-    //                 tome: Tome {
-    //                     id: "21474836482".to_string(),
-    //                     name: "sys exec".to_string(),
-    //                     description: "Execute system things.".to_string(),
-    //                     param_defs: None,
-    //                     eldritch: r#"
-    // def test():
-    // if sys.is_macos():
-    // sys.shell("sleep 3")
-    // if sys.is_linux():
-    // sys.shell("sleep 3")
-    // if sys.is_windows():
-    // sys.shell("timeout 3")
-    // test()
-    // print("main_loop_test_success")"#
-    //                         .to_string(),
-    //                     files: None,
-    //                 },
-    //                 bundle: None,
-    //             },
-    //         };
-    //         let claim_task_response = GraphQLResponse {
-    //             data: Some(ClaimTasksResponseData {
-    //                 claim_tasks: vec![test_task.clone(), test_task.clone()],
-    //             }),
-    //             errors: None,
-    //             extensions: None,
-    //         };
-    //         server.expect(
-    //             Expectation::matching(all_of![
-    //                 request::method_path("POST", "/graphql"),
-    //                 request::body(matches(".*variables.*hostPlatform.*"))
-    //             ])
-    //             .times(1)
-    //             .respond_with(status_code(200).body(serde_json::to_string(&claim_task_response)?)),
-    //         );
-    //         let url = server.url("/graphql").to_string();
+        let test_task_id = 12346;
+        let test_task = Task {
+            id: test_task_id,
+            eldritch: r#"
+def test():
+    if sys.is_macos():
+        sys.shell("sleep 3")
+    if sys.is_linux():
+        sys.shell("sleep 3")
+    if sys.is_windows():
+        sys.shell("timeout 3")
 
-    //         let tmp_file_new = NamedTempFile::new()?;
-    //         let path_new = String::from(tmp_file_new.path().to_str().unwrap()).clone();
-    //         let _ = std::fs::write(
-    //             path_new.clone(),
-    //             format!(
-    //                 r#"{{
-    //     "service_configs": [],
-    //     "target_forward_connect_ip": "127.0.0.1",
-    //     "target_name": "test1234",
-    //     "callback_config": {{
-    //         "interval": 4,
-    //         "jitter": 0,
-    //         "timeout": 4,
-    //         "c2_configs": [
-    //         {{
-    //             "priority": 1,
-    //             "uri": "{url}"
-    //         }}
-    //         ]
-    //     }}
-    // }}"#
-    //             ),
-    //         );
+test()
+print("main_loop_test_success")"#.to_string(),
+            parameters: HashMap::new(),
+        };
 
-    //         let runtime = tokio::runtime::Builder::new_multi_thread()
-    //             .enable_all()
-    //             .build()
-    //             .unwrap();
+        // let claim_task_response = GraphQLResponse {
+        //     data: Some(ClaimTasksResponseData {
+        //         claim_tasks: vec![test_task.clone(), test_task.clone()],
+        //     }),
+        //     errors: None,
+        //     extensions: None,
+        // };
+        // server.expect(
+        //     Expectation::matching(all_of![
+        //         request::method_path("POST", "/graphql"),
+        //         request::body(matches(".*variables.*hostPlatform.*"))
+        //     ])
+        //     .times(1)
+        //     .respond_with(status_code(200).body(serde_json::to_string(&claim_task_response)?)),
+        // );
+        let url = server.url("/c2.C2/").to_string();
 
-    //         // Define a future for our execution task
-    //         let start_time = Utc::now().time();
-    //         let exec_future = main_loop(path_new, Some(1));
-    //         let _result = runtime.block_on(exec_future).unwrap();
-    //         let end_time = Utc::now().time();
-    //         let diff = (end_time - start_time).num_milliseconds();
-    //         assert!(diff < 4500);
-    //         Ok(())
-    //     }
+        let tmp_file_new = NamedTempFile::new()?;
+        let path_new = String::from(tmp_file_new.path().to_str().unwrap()).clone();
+        let _ = std::fs::write(
+            path_new.clone(),
+            format!(
+                r#"{{
+    "service_configs": [],
+    "target_forward_connect_ip": "127.0.0.1",
+    "target_name": "test1234",
+    "callback_config": {{
+        "interval": 4,
+        "jitter": 0,
+        "timeout": 4,
+        "c2_configs": [
+        {{
+            "priority": 1,
+            "uri": "{url}"
+        }}
+        ]
+    }}
+}}"#
+            ),
+        );
+
+        let runtime = tokio::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+
+        // Define a future for our execution task
+        let start_time = Utc::now().time();
+        let exec_future = main_loop(path_new, Some(1));
+        let _result = runtime.block_on(exec_future).unwrap();
+        let end_time = Utc::now().time();
+        let diff = (end_time - start_time).num_milliseconds();
+        assert!(diff < 4500);
+        Ok(())
+    }
 
     //     #[test]
     //     fn imix_test_main_loop_run_once() -> Result<()> {
